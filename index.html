@@ -32,6 +32,12 @@
           placeholder="Paste Base64 PDF content here">
         </textarea>
 
+        <input
+          id="fileNameInput"
+          class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          placeholder="File name (optional)"
+          value="document.pdf">
+
         <div class="flex flex-col gap-3 sm:flex-row">
           <button
             onclick="previewBase64PDF()"
@@ -105,20 +111,34 @@
 
   <script>
     let currentPdfUrl = null;
+    let detectedFileName = "document.pdf";
 
     function previewBase64PDF() {
-      const base64 = document.getElementById("base64Input").value.trim();
-      if (!base64) {
+      let input = document.getElementById("base64Input").value.trim();
+      if (!input) {
         alert("Paste Base64 content first");
         return;
       }
 
-      try {
-        if (currentPdfUrl) {
-          URL.revokeObjectURL(currentPdfUrl);
-        }
+      detectedFileName = document.getElementById("fileNameInput").value || "document.pdf";
 
-        const binary = atob(base64);
+      if (input.startsWith("data:")) {
+        const nameMatch = input.match(/name=([^;]+)/);
+        if (nameMatch) {
+          detectedFileName = nameMatch[1];
+          document.getElementById("fileNameInput").value = detectedFileName;
+        }
+        input = input.split(",")[1];
+      }
+
+      if (!detectedFileName.toLowerCase().endsWith(".pdf")) {
+        detectedFileName += ".pdf";
+      }
+
+      try {
+        if (currentPdfUrl) URL.revokeObjectURL(currentPdfUrl);
+
+        const binary = atob(input);
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) {
           bytes[i] = binary.charCodeAt(i);
@@ -128,7 +148,7 @@
         currentPdfUrl = URL.createObjectURL(blob);
 
         document.getElementById("pdfPreview").src = currentPdfUrl;
-        document.getElementById("previewStatus").textContent = "PDF loaded successfully";
+        document.getElementById("previewStatus").textContent = "PDF loaded";
         document.getElementById("downloadBtn").disabled = false;
       } catch {
         alert("Invalid Base64 string");
@@ -139,7 +159,7 @@
       if (!currentPdfUrl) return;
       const a = document.createElement("a");
       a.href = currentPdfUrl;
-      a.download = "converted.pdf";
+      a.download = detectedFileName;
       a.click();
     }
 
@@ -148,6 +168,7 @@
       document.getElementById("pdfPreview").src = "";
       document.getElementById("previewStatus").textContent = "No PDF loaded";
       document.getElementById("downloadBtn").disabled = true;
+      detectedFileName = "document.pdf";
 
       if (currentPdfUrl) {
         URL.revokeObjectURL(currentPdfUrl);
@@ -158,6 +179,8 @@
     function convertPDFToBase64(input) {
       const file = input.files[0];
       if (!file) return;
+
+      document.getElementById("fileNameInput").value = file.name;
 
       const reader = new FileReader();
       reader.onload = function () {
@@ -171,7 +194,7 @@
       const textarea = document.getElementById("pdfBase64Output");
       textarea.select();
       document.execCommand("copy");
-      alert("Base64 copied to clipboard");
+      alert("Base64 copied");
     }
   </script>
 
