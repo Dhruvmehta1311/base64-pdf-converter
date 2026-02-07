@@ -13,7 +13,7 @@
       Base64 ↔ PDF Converter
     </h1>
     <p class="text-center text-slate-500 mb-8">
-      Convert and preview PDFs instantly without downloading
+      Convert, preview, and download PDFs instantly
     </p>
 
     <div class="grid lg:grid-cols-2 gap-8">
@@ -21,7 +21,7 @@
       <!-- Base64 to PDF -->
       <div>
         <h2 class="text-xl font-semibold text-slate-700 mb-3">
-          Base64 to PDF Preview
+          Base64 to PDF
         </h2>
 
         <textarea id="base64Input"
@@ -31,7 +31,7 @@
         <div class="flex gap-3 mt-4">
           <button onclick="previewBase64PDF()"
             class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-            Preview PDF
+            Preview
           </button>
 
           <button onclick="clearBase64()"
@@ -40,11 +40,30 @@
           </button>
         </div>
 
-        <div class="mt-6 border rounded-xl overflow-hidden bg-slate-50 h-[500px]">
-          <iframe id="pdfPreview"
-            class="w-full h-full"
-            title="PDF Preview">
-          </iframe>
+        <!-- Preview Container -->
+        <div class="mt-6 border rounded-xl overflow-hidden bg-slate-50">
+          
+          <!-- Preview Header -->
+          <div class="flex items-center justify-between px-4 py-2 bg-slate-100 border-b">
+            <span id="previewStatus" class="text-sm text-slate-600">
+              No PDF loaded
+            </span>
+
+            <button onclick="downloadPDF()"
+              class="bg-green-600 text-white px-3 py-1.5 text-sm rounded-lg hover:bg-green-700 transition disabled:opacity-40"
+              id="downloadBtn"
+              disabled>
+              Download PDF
+            </button>
+          </div>
+
+          <!-- PDF Viewer -->
+          <div class="h-[500px]">
+            <iframe id="pdfPreview"
+              class="w-full h-full bg-white"
+              title="PDF Preview">
+            </iframe>
+          </div>
         </div>
       </div>
 
@@ -101,14 +120,32 @@
         currentPdfUrl = URL.createObjectURL(blob);
 
         document.getElementById("pdfPreview").src = currentPdfUrl;
+        document.getElementById("previewStatus").textContent = "PDF loaded successfully";
+        document.getElementById("downloadBtn").disabled = false;
       } catch {
         alert("Invalid Base64 string");
       }
     }
 
+    function downloadPDF() {
+      if (!currentPdfUrl) return;
+
+      const a = document.createElement("a");
+      a.href = currentPdfUrl;
+      a.download = "converted.pdf";
+      a.click();
+    }
+
     function clearBase64() {
       document.getElementById("base64Input").value = "";
       document.getElementById("pdfPreview").src = "";
+      document.getElementById("previewStatus").textContent = "No PDF loaded";
+      document.getElementById("downloadBtn").disabled = true;
+
+      if (currentPdfUrl) {
+        URL.revokeObjectURL(currentPdfUrl);
+        currentPdfUrl = null;
+      }
     }
 
     function convertPDFToBase64(input) {
