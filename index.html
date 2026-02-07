@@ -6,70 +6,67 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-slate-100 min-h-screen px-4 py-8">
-  <div class="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-8">
-    
-    <h1 class="text-3xl font-bold text-slate-800 text-center mb-2">
+<body class="bg-slate-100 min-h-screen p-4">
+  <div class="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-8">
+
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 text-center mb-1">
       Base64 ↔ PDF Converter
     </h1>
-    <p class="text-center text-slate-500 mb-8">
-      Convert, preview, and download PDFs instantly
+    <p class="text-center text-slate-500 text-sm sm:text-base mb-6">
+      Convert, preview and download PDFs instantly
     </p>
 
-    <div class="grid lg:grid-cols-2 gap-8">
-      
+    <div class="flex flex-col lg:grid lg:grid-cols-2 gap-6">
+
       <!-- Base64 to PDF -->
-      <div>
-        <h2 class="text-xl font-semibold text-slate-700 mb-3">
+      <section class="space-y-4">
+        <h2 class="text-lg font-semibold text-slate-700">
           Base64 to PDF
         </h2>
 
         <textarea id="base64Input"
-          class="w-full h-40 border rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          class="w-full h-36 sm:h-44 border rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
           placeholder="Paste Base64 PDF content here"></textarea>
 
-        <div class="flex gap-3 mt-4">
+        <div class="flex flex-col sm:flex-row gap-3">
           <button onclick="previewBase64PDF()"
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-            Preview
+            class="w-full sm:w-auto bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition">
+            Preview PDF
           </button>
 
           <button onclick="clearBase64()"
-            class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-300 transition">
+            class="w-full sm:w-auto bg-slate-200 text-slate-700 px-4 py-2.5 rounded-lg hover:bg-slate-300 transition">
             Clear
           </button>
         </div>
 
-        <!-- Preview Container -->
-        <div class="mt-6 border rounded-xl overflow-hidden bg-slate-50">
-          
-          <!-- Preview Header -->
-          <div class="flex items-center justify-between px-4 py-2 bg-slate-100 border-b">
-            <span id="previewStatus" class="text-sm text-slate-600">
+        <!-- Preview -->
+        <div class="border rounded-xl overflow-hidden bg-slate-50">
+          <div class="flex items-center justify-between px-3 py-2 bg-slate-100 border-b">
+            <span id="previewStatus" class="text-xs sm:text-sm text-slate-600">
               No PDF loaded
             </span>
 
             <button onclick="downloadPDF()"
-              class="bg-green-600 text-white px-3 py-1.5 text-sm rounded-lg hover:bg-green-700 transition disabled:opacity-40"
               id="downloadBtn"
-              disabled>
-              Download PDF
+              disabled
+              class="bg-green-600 text-white px-3 py-1.5 text-xs sm:text-sm rounded-lg hover:bg-green-700 transition disabled:opacity-40">
+              Download
             </button>
           </div>
 
-          <!-- PDF Viewer -->
-          <div class="h-[500px]">
+          <div class="h-[350px] sm:h-[420px] lg:h-[500px]">
             <iframe id="pdfPreview"
               class="w-full h-full bg-white"
               title="PDF Preview">
             </iframe>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- PDF to Base64 -->
-      <div>
-        <h2 class="text-xl font-semibold text-slate-700 mb-3">
+      <section class="space-y-4">
+        <h2 class="text-lg font-semibold text-slate-700">
           PDF to Base64
         </h2>
 
@@ -82,14 +79,14 @@
           hover:file:bg-blue-100 cursor-pointer"/>
 
         <textarea id="pdfBase64Output"
-          class="w-full h-[460px] border rounded-lg p-3 text-sm mt-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          class="w-full h-64 sm:h-80 lg:h-[460px] border rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
           placeholder="Base64 output will appear here"></textarea>
 
         <button onclick="copyBase64()"
-          class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+          class="w-full sm:w-auto bg-green-600 text-white px-4 py-2.5 rounded-lg hover:bg-green-700 transition">
           Copy Base64
         </button>
-      </div>
+      </section>
 
     </div>
   </div>
@@ -105,9 +102,7 @@
       }
 
       try {
-        if (currentPdfUrl) {
-          URL.revokeObjectURL(currentPdfUrl);
-        }
+        if (currentPdfUrl) URL.revokeObjectURL(currentPdfUrl);
 
         const byteCharacters = atob(base64);
         const byteNumbers = new Array(byteCharacters.length);
@@ -115,12 +110,11 @@
           byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
 
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: "application/pdf" });
+        const blob = new Blob([new Uint8Array(byteNumbers)], { type: "application/pdf" });
         currentPdfUrl = URL.createObjectURL(blob);
 
         document.getElementById("pdfPreview").src = currentPdfUrl;
-        document.getElementById("previewStatus").textContent = "PDF loaded successfully";
+        document.getElementById("previewStatus").textContent = "PDF loaded";
         document.getElementById("downloadBtn").disabled = false;
       } catch {
         alert("Invalid Base64 string");
@@ -129,7 +123,6 @@
 
     function downloadPDF() {
       if (!currentPdfUrl) return;
-
       const a = document.createElement("a");
       a.href = currentPdfUrl;
       a.download = "converted.pdf";
@@ -141,11 +134,8 @@
       document.getElementById("pdfPreview").src = "";
       document.getElementById("previewStatus").textContent = "No PDF loaded";
       document.getElementById("downloadBtn").disabled = true;
-
-      if (currentPdfUrl) {
-        URL.revokeObjectURL(currentPdfUrl);
-        currentPdfUrl = null;
-      }
+      if (currentPdfUrl) URL.revokeObjectURL(currentPdfUrl);
+      currentPdfUrl = null;
     }
 
     function convertPDFToBase64(input) {
@@ -154,8 +144,8 @@
 
       const reader = new FileReader();
       reader.onload = function () {
-        const base64 = reader.result.split(",")[1];
-        document.getElementById("pdfBase64Output").value = base64;
+        document.getElementById("pdfBase64Output").value =
+          reader.result.split(",")[1];
       };
       reader.readAsDataURL(file);
     }
@@ -164,7 +154,7 @@
       const textarea = document.getElementById("pdfBase64Output");
       textarea.select();
       document.execCommand("copy");
-      alert("Base64 copied to clipboard");
+      alert("Base64 copied");
     }
   </script>
 </body>
