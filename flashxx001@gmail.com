@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Base64 ↔ PDF Converter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100 min-h-screen px-4 py-8">
+  <div class="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-8">
+    
+    <h1 class="text-3xl font-bold text-slate-800 text-center mb-2">
+      Base64 ↔ PDF Converter
+    </h1>
+    <p class="text-center text-slate-500 mb-8">
+      Convert and preview PDFs instantly without downloading
+    </p>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+      
+      <!-- Base64 to PDF -->
+      <div>
+        <h2 class="text-xl font-semibold text-slate-700 mb-3">
+          Base64 to PDF Preview
+        </h2>
+
+        <textarea id="base64Input"
+          class="w-full h-40 border rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          placeholder="Paste Base64 PDF content here"></textarea>
+
+        <div class="flex gap-3 mt-4">
+          <button onclick="previewBase64PDF()"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+            Preview PDF
+          </button>
+
+          <button onclick="clearBase64()"
+            class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-300 transition">
+            Clear
+          </button>
+        </div>
+
+        <div class="mt-6 border rounded-xl overflow-hidden bg-slate-50 h-[500px]">
+          <iframe id="pdfPreview"
+            class="w-full h-full"
+            title="PDF Preview">
+          </iframe>
+        </div>
+      </div>
+
+      <!-- PDF to Base64 -->
+      <div>
+        <h2 class="text-xl font-semibold text-slate-700 mb-3">
+          PDF to Base64
+        </h2>
+
+        <input type="file" accept="application/pdf"
+          onchange="convertPDFToBase64(this)"
+          class="block w-full text-sm text-slate-600
+          file:mr-4 file:py-2 file:px-4
+          file:rounded-lg file:border-0
+          file:bg-blue-50 file:text-blue-700
+          hover:file:bg-blue-100 cursor-pointer"/>
+
+        <textarea id="pdfBase64Output"
+          class="w-full h-[460px] border rounded-lg p-3 text-sm mt-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          placeholder="Base64 output will appear here"></textarea>
+
+        <button onclick="copyBase64()"
+          class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+          Copy Base64
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentPdfUrl = null;
+
+    function previewBase64PDF() {
+      const base64 = document.getElementById("base64Input").value.trim();
+      if (!base64) {
+        alert("Paste Base64 content first");
+        return;
+      }
+
+      try {
+        if (currentPdfUrl) {
+          URL.revokeObjectURL(currentPdfUrl);
+        }
+
+        const byteCharacters = atob(base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+        currentPdfUrl = URL.createObjectURL(blob);
+
+        document.getElementById("pdfPreview").src = currentPdfUrl;
+      } catch {
+        alert("Invalid Base64 string");
+      }
+    }
+
+    function clearBase64() {
+      document.getElementById("base64Input").value = "";
+      document.getElementById("pdfPreview").src = "";
+    }
+
+    function convertPDFToBase64(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        const base64 = reader.result.split(",")[1];
+        document.getElementById("pdfBase64Output").value = base64;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function copyBase64() {
+      const textarea = document.getElementById("pdfBase64Output");
+      textarea.select();
+      document.execCommand("copy");
+      alert("Base64 copied to clipboard");
+    }
+  </script>
+</body>
+</html>
