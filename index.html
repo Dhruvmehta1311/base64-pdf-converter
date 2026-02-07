@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Base64 ↔ PDF Converter</title>
+  <meta charset="UTF-8">
+  <title>Base64 PDF Converter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-slate-100 min-h-screen p-4">
-  <div class="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-8">
+<body class="bg-slate-100 min-h-screen">
 
-    <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 text-center mb-1">
-      Base64 ↔ PDF Converter
+  <div class="w-full max-w-none lg:max-w-6xl mx-auto bg-white lg:shadow-xl lg:rounded-2xl p-3 sm:p-4 lg:p-8">
+
+    <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 text-center">
+      Base64 PDF Converter
     </h1>
-    <p class="text-center text-slate-500 text-sm sm:text-base mb-6">
+    <p class="text-center text-slate-500 text-sm sm:text-base mt-1 mb-6">
       Convert, preview and download PDFs instantly
     </p>
 
@@ -24,39 +26,44 @@
           Base64 to PDF
         </h2>
 
-        <textarea id="base64Input"
+        <textarea
+          id="base64Input"
           class="w-full h-36 sm:h-44 border rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          placeholder="Paste Base64 PDF content here"></textarea>
+          placeholder="Paste Base64 PDF content here">
+        </textarea>
 
-        <div class="flex flex-col sm:flex-row gap-3">
-          <button onclick="previewBase64PDF()"
-            class="w-full sm:w-auto bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition">
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <button
+            onclick="previewBase64PDF()"
+            class="w-full sm:w-auto bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition">
             Preview PDF
           </button>
 
-          <button onclick="clearBase64()"
-            class="w-full sm:w-auto bg-slate-200 text-slate-700 px-4 py-2.5 rounded-lg hover:bg-slate-300 transition">
+          <button
+            onclick="clearBase64()"
+            class="w-full sm:w-auto bg-slate-200 text-slate-700 px-4 py-3 rounded-lg hover:bg-slate-300 transition">
             Clear
           </button>
         </div>
 
-        <!-- Preview -->
         <div class="border rounded-xl overflow-hidden bg-slate-50">
           <div class="flex items-center justify-between px-3 py-2 bg-slate-100 border-b">
             <span id="previewStatus" class="text-xs sm:text-sm text-slate-600">
               No PDF loaded
             </span>
 
-            <button onclick="downloadPDF()"
+            <button
               id="downloadBtn"
+              onclick="downloadPDF()"
               disabled
-              class="bg-green-600 text-white px-3 py-1.5 text-xs sm:text-sm rounded-lg hover:bg-green-700 transition disabled:opacity-40">
-              Download
+              class="bg-green-600 text-white px-3 py-2 text-xs sm:text-sm rounded-lg hover:bg-green-700 transition disabled:opacity-40">
+              Download PDF
             </button>
           </div>
 
-          <div class="h-[350px] sm:h-[420px] lg:h-[500px]">
-            <iframe id="pdfPreview"
+          <div class="h-[420px] sm:h-[450px] lg:h-[500px] bg-slate-200">
+            <iframe
+              id="pdfPreview"
               class="w-full h-full bg-white"
               title="PDF Preview">
             </iframe>
@@ -70,20 +77,25 @@
           PDF to Base64
         </h2>
 
-        <input type="file" accept="application/pdf"
+        <input
+          type="file"
+          accept="application/pdf"
           onchange="convertPDFToBase64(this)"
           class="block w-full text-sm text-slate-600
           file:mr-4 file:py-2 file:px-4
           file:rounded-lg file:border-0
           file:bg-blue-50 file:text-blue-700
-          hover:file:bg-blue-100 cursor-pointer"/>
+          hover:file:bg-blue-100 cursor-pointer">
 
-        <textarea id="pdfBase64Output"
+        <textarea
+          id="pdfBase64Output"
           class="w-full h-64 sm:h-80 lg:h-[460px] border rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          placeholder="Base64 output will appear here"></textarea>
+          placeholder="Base64 output will appear here">
+        </textarea>
 
-        <button onclick="copyBase64()"
-          class="w-full sm:w-auto bg-green-600 text-white px-4 py-2.5 rounded-lg hover:bg-green-700 transition">
+        <button
+          onclick="copyBase64()"
+          class="w-full sm:w-auto bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition">
           Copy Base64
         </button>
       </section>
@@ -102,19 +114,21 @@
       }
 
       try {
-        if (currentPdfUrl) URL.revokeObjectURL(currentPdfUrl);
-
-        const byteCharacters = atob(base64);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        if (currentPdfUrl) {
+          URL.revokeObjectURL(currentPdfUrl);
         }
 
-        const blob = new Blob([new Uint8Array(byteNumbers)], { type: "application/pdf" });
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+
+        const blob = new Blob([bytes], { type: "application/pdf" });
         currentPdfUrl = URL.createObjectURL(blob);
 
         document.getElementById("pdfPreview").src = currentPdfUrl;
-        document.getElementById("previewStatus").textContent = "PDF loaded";
+        document.getElementById("previewStatus").textContent = "PDF loaded successfully";
         document.getElementById("downloadBtn").disabled = false;
       } catch {
         alert("Invalid Base64 string");
@@ -134,8 +148,11 @@
       document.getElementById("pdfPreview").src = "";
       document.getElementById("previewStatus").textContent = "No PDF loaded";
       document.getElementById("downloadBtn").disabled = true;
-      if (currentPdfUrl) URL.revokeObjectURL(currentPdfUrl);
-      currentPdfUrl = null;
+
+      if (currentPdfUrl) {
+        URL.revokeObjectURL(currentPdfUrl);
+        currentPdfUrl = null;
+      }
     }
 
     function convertPDFToBase64(input) {
@@ -154,8 +171,9 @@
       const textarea = document.getElementById("pdfBase64Output");
       textarea.select();
       document.execCommand("copy");
-      alert("Base64 copied");
+      alert("Base64 copied to clipboard");
     }
   </script>
+
 </body>
 </html>
