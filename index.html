@@ -14,9 +14,12 @@
     <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 text-center">
       Base64 PDF Converter
     </h1>
-    <p class="text-center text-slate-500 text-sm sm:text-base mt-1 mb-6">
+    <p class="text-center text-slate-500 text-sm sm:text-base mt-1 mb-4">
       Convert, preview and download PDFs instantly
     </p>
+
+    <!-- Message Box -->
+    <div id="messageBox" class="hidden mb-4 rounded-lg p-3 text-sm"></div>
 
     <div class="flex flex-col lg:grid lg:grid-cols-2 gap-6">
 
@@ -29,8 +32,7 @@
         <textarea
           id="base64Input"
           class="w-full h-36 sm:h-44 border rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          placeholder="Paste Base64 PDF content here">
-        </textarea>
+          placeholder="Paste Base64 PDF content here"></textarea>
 
         <input
           id="fileNameInput"
@@ -71,8 +73,7 @@
             <iframe
               id="pdfPreview"
               class="w-full h-full bg-white"
-              title="PDF Preview">
-            </iframe>
+              title="PDF Preview"></iframe>
           </div>
         </div>
       </section>
@@ -96,8 +97,7 @@
         <textarea
           id="pdfBase64Output"
           class="w-full h-64 sm:h-80 lg:h-[460px] border rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          placeholder="Base64 output will appear here">
-        </textarea>
+          placeholder="Base64 output will appear here"></textarea>
 
         <button
           onclick="copyBase64()"
@@ -113,14 +113,35 @@
     let currentPdfUrl = null;
     let detectedFileName = "document.pdf";
 
+    function showMessage(message, type = "info") {
+      const box = document.getElementById("messageBox");
+      box.textContent = message;
+      box.className = "mb-4 rounded-lg p-3 text-sm";
+
+      if (type === "error") {
+        box.classList.add("bg-red-100", "text-red-700");
+      } else if (type === "success") {
+        box.classList.add("bg-green-100", "text-green-700");
+      } else {
+        box.classList.add("bg-blue-100", "text-blue-700");
+      }
+
+      box.classList.remove("hidden");
+
+      setTimeout(() => {
+        box.classList.add("hidden");
+      }, 4000);
+    }
+
     function previewBase64PDF() {
       let input = document.getElementById("base64Input").value.trim();
       if (!input) {
-        alert("Paste Base64 content first");
+        showMessage("Please paste Base64 content first", "error");
         return;
       }
 
-      detectedFileName = document.getElementById("fileNameInput").value || "document.pdf";
+      detectedFileName =
+        document.getElementById("fileNameInput").value || "document.pdf";
 
       if (input.startsWith("data:")) {
         const nameMatch = input.match(/name=([^;]+)/);
@@ -150,8 +171,10 @@
         document.getElementById("pdfPreview").src = currentPdfUrl;
         document.getElementById("previewStatus").textContent = "PDF loaded";
         document.getElementById("downloadBtn").disabled = false;
+
+        showMessage("PDF loaded successfully", "success");
       } catch {
-        alert("Invalid Base64 string");
+        showMessage("Invalid Base64. Please check the input.", "error");
       }
     }
 
@@ -174,6 +197,8 @@
         URL.revokeObjectURL(currentPdfUrl);
         currentPdfUrl = null;
       }
+
+      showMessage("Cleared input and preview", "info");
     }
 
     function convertPDFToBase64(input) {
@@ -186,6 +211,7 @@
       reader.onload = function () {
         document.getElementById("pdfBase64Output").value =
           reader.result.split(",")[1];
+        showMessage("PDF converted to Base64", "success");
       };
       reader.readAsDataURL(file);
     }
@@ -194,7 +220,7 @@
       const textarea = document.getElementById("pdfBase64Output");
       textarea.select();
       document.execCommand("copy");
-      alert("Base64 copied");
+      showMessage("Base64 copied to clipboard", "success");
     }
   </script>
 
